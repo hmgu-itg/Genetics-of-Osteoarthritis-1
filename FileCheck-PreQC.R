@@ -3,7 +3,7 @@
 ###########################################
 ### Creator: Cindy G. Boer
 ### Last Updated: 27/07/2018
-### For questions: c.boer@erasmumc.nl/cb39@sanger.ac.uk
+### For questions: c.boer@erasmumc.nl
 ###########################################
 
 ###### SCRIPT INFORMATION
@@ -17,7 +17,7 @@
 # ./FileCheck-PreQC.R [PATH/filename.Uploaded.GWAS.data]
 
 ## RUN for directory with files[FARM]
-# for i in $(ls PATH/FOLDER/*); do echo /FileCheck-PreQC.R  $i; done | ~ag15/array 30g NAME
+# for i in $(ls PATH/FOLDER/*); do echo /FileCheck-PreQC.R  $i; done | ./array 30g NAME
 
 ### Input:
 ### Takes uploaded GWAS.summary Stats [as defined in analysis.plan, includes direct SNPtest output]. File can be in .txt or in .gz format.
@@ -58,7 +58,7 @@
 #########################################################
 ### GO consortium
 ### By Cindy G. Boer Erasmus MC
-### c.boer@erasmusmc.nl / cb39@sanger.ac.uk
+### c.boer@erasmusmc.nl
 ### Version 4.1
 ### Updates; With fudgefactor, EAF SNPtest, print warnings
 ### Last-updated: 18/10/2018
@@ -67,7 +67,6 @@
 ###                 Dependancies                      ###
 #########################################################
 ### library "data.table
-# on farm fwrite does not work, fread does
 library("data.table")
 setDTthreads(threads = 1)
 
