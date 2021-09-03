@@ -16,7 +16,7 @@ function usage {
 # default
 threads=1
 ct=0.9
-pt=5e-8
+pt=1.3e-8
 
 OPTIND=1
 while getopts "i:n:f:t:c:p:" optname; do
