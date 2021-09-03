@@ -33,15 +33,15 @@ winstr=$(echo $window|perl -lne 'print sprintf("%0.2fMb",$_/1000000);')
 logfile="$PWD"/"cojo-prepare_$winstr"."log"
 
 # path to meta-analysis results
-ma_path="/storage/hmgu/projects/helic/OLINK/meta_analysis"
+ma_path=" "
 
 # PLINK files
-ha_plink="/storage/sanger/projects/helic/t144_helic_15x/analysis/HA/single_point/input/whole_genome/autosomal.correctsnames"
-hp_plink="/storage/sanger/projects/helic/t144_helic_15x/analysis/HP/missingness/gw/merged.shortnames"
+ha_plink=" "
+hp_plink=" "
 
 # pheno files prefixes
-ha_pheno="/storage/sanger/projects/helic/t144_helic_15x/analysis/HA/phenotypes/OLINK/MANOLIS"
-hp_pheno="/storage/hmgu/projects/helic/OLINK/HP/phenotypes"
+ha_pheno=" "
+hp_pheno=" "
 
 echo "window        : $window" > "$logfile"
 echo "known signals : $known" >> "$logfile"
