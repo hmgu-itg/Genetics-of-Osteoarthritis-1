@@ -1,8 +1,16 @@
 #!/bin/bash
+#Path to PRSice
+prs=$1
+#Path to base file
+base=$2
+#Path to files used for ld calculation
+ld=$3
+#Path to target phenotype files
+target=$4
 
 for PHENO in HipOA AllOA FingerOA HandOA SpineOA KneeOA KneeHipOA  THR ThumbOA TJR TKR ; do
-echo "/software/team144/PRSice_v2.2.8.linux \
---base /lustre/scratch115/projects/t144_nargwas/GO_METAL/FILTERING_10APRIL2019/UPLOAD/SENSITIVITY/GO.FILTER.GW.${PHENO}.noUKBB.13082019.txt.gz \
+echo "$prs \
+--base $base/GO.FILTER.GW.${PHENO}.noUKBB.13082019.txt.gz \
 --snp CPTID \
 --chr CHR  \
 --A1 EA  \
@@ -10,16 +18,16 @@ echo "/software/team144/PRSice_v2.2.8.linux \
 --or  \
 --stat OR  \
 --pvalue P  \
---target /lustre/scratch115/projects/ukbiobank/v3.BGEN.to.BED/COJO/chr#-noduplicates-missnp,/lustre/scratch115/projects/t144_nargwas/GO_METAL/PGRS/Target.pheno.files/${PHENO}.fam \
+--target $ld/chr#-noduplicates-missnp,$target/${PHENO}.fam \
 --binary-target T \
 --type bed \
---cov /lustre/scratch115/projects/t144_nargwas/GO_METAL/PGRS/Target.pheno.files/Covar.txt \
+--cov $target/Covar.txt \
 --cov-col @PC[1-20] \
 --clump-kb 1M \
 --clump-r2 0.1 \
 --clump-p 1e-04 \
---ld /lustre/scratch115/projects/ukbiobank/v3.BGEN.to.BED/COJO/chr#-noduplicates-missnp,/lustre/scratch115/projects/t144_nargwas/GO_METAL/PGRS/Target.pheno.files/${PHENO}.fam \
---ld-keep /lustre/scratch115/projects/t144_nargwas/GO_METAL/PGRS/Target.pheno.files/LD.fam \
+--ld $ld/chr#-noduplicates-missnp,$target/${PHENO}.fam \
+--ld-keep $ld/LD.fam \
 --lower 1.3e-08  \
 --upper 1e-4  \
 --interval 1e-07 \
