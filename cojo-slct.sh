@@ -15,7 +15,7 @@ function usage {
 
 # default
 threads=1
-ct=0.9
+ct=0.99
 pt=1.3e-8
 
 OPTIND=1
