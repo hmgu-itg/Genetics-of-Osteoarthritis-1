@@ -9,7 +9,7 @@ function usage {
     exit 0
 }
 
-# default
+## default
 ct=0.9
 
 OPTIND=1
