@@ -1,5 +1,5 @@
 #!/bin/bash
-#Path to PRSice
+#Path to PRSice software
 prs=$1
 #Path to base file
 base=$2
