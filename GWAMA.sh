@@ -77,7 +77,7 @@ done
 for PHENO in AllOA HipOA KneeOA KneeHipOA HandOA ThumbOA FingerOA SpineOA THR TKR TJR ; do tabix -c "#" -s 20 -b 21 -e 21 $tabix/GO-meta1.Female_${PHENO}.txt.bgz &
 done
 
-for PHENO in AllOA HipOA KneeOA KneeHipOA HandOA ThumbOA FingerOA SpineOA THR TKR TJR ; do tabix -c "#" -s 20 -b 21 -e 21 /lustre/scratch115/realdata/mdt1/projects/t144_nargwas/GO_METAL/GWAMA_Sex-Spec_30032020_Kostas/tabixFiles_created30March2020/GO-meta1.Male_${PHENO}.txt.bgz &
+for PHENO in AllOA HipOA KneeOA KneeHipOA HandOA ThumbOA FingerOA SpineOA THR TKR TJR ; do tabix -c "#" -s 20 -b 21 -e 21 $tabix/GO-meta1.Male_${PHENO}.txt.bgz &
 done
 
 #Produce some regional plots for ALDH1A2
