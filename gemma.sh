@@ -1,141 +1,91 @@
-#!/usr/bin/bash
+#!/bin/bash
+#PROGRAM PATHS
+#plink=" "
+tabix=" "
+gemma=" "
+# DATA PATHS
+input_bimbamfiles=" "
+matrix_bimbamfile=" "
 
-# pheno
-panel=$1
+#Usage
+#./gemma.bash <phenotype> <number of column in the phenotype file> <location of the phenotype file> <location of the annotation file> <name of the cohort> <location of the covariates file>
 
-# protein
-prot=$2
+#Arguments
+phenotype=$1
+n=$2
+phenotype_file=$3
+annotation_file=$4
+cohort=$5
+cov=$6
 
-# chromosome 
- 
-chr=$3
+# Exports
+export CF9_R_LIBS=""
+export PATH=" ":$PATH
+export R_LIBS=" "
 
-# position of the SNP 
+mkdir $phenotype
+cd $phenotype
 
-pos=$4
-
-# file with the "UniprotID rsID" pairs from the external study 
-
-extfile=$5
-
-# output directory for auxillary files; GEMMA saves its output in the separate "output" directory
-
-outdir=$6
-
-# logfile 
-
-logfile=$7
-
-if [ ! -d $outdir ];then
-    mkdir $outdir
-fi
-
-# prefix for auxillary files 
-prefix="$outdir/$panel"."$prot"."$chr"."$pos"
-
-# prefix for GEMMA output files
-outfile="$panel"."$prot"."$chr"."$pos".out
-
-echo "INPUT : PANEL: $panel" >> ${logfile}
-echo "INPUT : PROT: $prot" >> ${logfile}
-echo "INPUT : CHR: $chr" >> ${logfile}
-echo "INPUT : POS: $pos" >> ${logfile}
-echo "INPUT : EXTFILE: $extfile" >> ${logfile}
-echo "INPUT : OUTDIR: $outdir" >> ${logfile}
-echo "PREFIX: $prefix" >> ${logfile}
-
-# file with genotypes
-genofile="/storage/sanger/projects/helic/t144_helic_15x/analysis/HA/single_point/input/whole_genome/autosomal.correctsnames"
-
-# GEMMA executable
-GEMMA="/storage/hmgu/software/gemma-0.94"
-
-# relatedness matrix
-RELMAT="/storage/sanger/projects/helic/t144_helic_15x/analysis/HA/relmat/final/single-point/merge.cXX.txt"
-
-# script to get most recent (chr pos) for a given rsID
-#script="/home/andrei/rsid.to.pos.b38.sh"
-script="/home/andrei/scripts/getSNPb38Position.py"
-
-# uniprot file which gives an UniprotID to a protein
-ufile="/storage/sanger/team144/OLINK/ALL_ensembl_uniprot"
-
-# uniprot ID for the input
-#uID=$(fgrep -w $prot $ufile | cut -f 5)
-uID=$(awk -v p=$prot 'BEGIN{FS="\t";}$2==p{print $5;exit 0;}' $ufile)
-
-echo "current UniprotID : " $uID >> ${logfile}
-
-# results of single-point association are in here
-assocfile="/storage/sanger/projects/helic/t144_helic_15x/analysis/HA/OLINK/single_point/"$panel"/"$panel"."$prot"/MANOLIS."$panel"."$prot".assoc.txt.gz"
-
-# contains only the current SNP
-totestIDs="$prefix".IDs.totest
-echo "chr"${chr}:${pos}"[b38]" > $totestIDs
-
-# SNPs to condition upon: they correspond to the SNPs (from the external study) that regulate the same protein as the input SNP
-tocondIDs="$prefix".IDs.tocond
-if [ -f $tocondIDs ];then
-        rm $tocondIDs
-fi
-touch $tocondIDs
-
-# loop over all variants from the external study that correspond to the given uniprot ID, convert their rsID to b38 coordinates
-# and if they are on the same chromosome and within 1Mbp window around the input SNP, add their single-point association results to the $tocondIDs
-
-wk -v id=$uID '$1==id{print $2;}' $extfile | while read rs;
+# Associate
+# Here just generate the GEMMA jobs!
+echo "Associating..."
+for i in `ls $input_bimbamfiles | sed 's/.*\///'`
 do
-    read -r cc pp <<<$($script $rs 2>>$logfile)
-    echo "SNP from the external study: $rs ($cc $pp) Input SNP: ($chr $pos)" >> ${logfile}
-    #read -r cc pp <<<$($script $rs|sed 's/:/ /'| sed 's/^chr//')
-    if [[ ${cc} == ${chr} ]];then # if they are on the same chromosome
-        let "d=$pp-$pos"
-        #echo $cc $chr $pp $pos $d
-        if [[ $d -lt 1000000 && $d -gt -1000000 ]];then # and if they are within 1Mbp window from each other
-            echo "chr"${cc}:${pp}"[b38]" >> $tocondIDs
-            echo "$cc==$chr; |$pp-$pos|<1000000; output $rs into $tocondIDs" >> ${logfile}
-        fi
-    fi
+    echo $gemma -g ${input_bimbamfiles}/$i -p $phenotype_file -n $n -a $annotation_file -notsnp -maf 0 -miss 1 -km 1 -k $matrix_bimbamfile -lmm 4 -c $cov -o $i
+done | ./array 30g asc | sed 's/red/green/'> assoc.command
+chmod +x assoc.command
+jobid=$(./assoc.command | sed 's/Job <//;s/> is.*//')
+
+echo "Watching for association job array $jobid to finish..."
+sleep 5
+njobs=$(bjobs | grep -w $jobid | wc -l)
+
+while [ $njobs -gt 0  ]
+do
+    njobs=$(bjobs | grep -w $jobid | wc -l)
+    sleep 5
 done
 
-# file with phenotypes
-phenofile="/storage/sanger/projects/helic/t144_helic_15x/analysis/HA/phenotypes/OLINK/MANOLIS"."$panel"."$prot"."txt"
 
-totestfile="$prefix".totest
-tocondfile="$prefix".tocond
-covarfile="$prefix".covar
-
-# is the input SNP one the conditioning SNPs ? If yes, we don't have to test anything
-if [[ $(fgrep "${chr}:${pos}[b38]" $tocondIDs | wc -l) -gt 0 ]]; then
-    echo "MORE THAN 1 occurrence of ${chr}:${pos} : same variant" >> ${logfile}
-    echo >> ${logfile}
-    touch "$prefix".samevariant
-else
-    if [[ $(cat $tocondIDs | wc -l) -lt 1 ]]; then
-        echo "No variants of condition study present in our dataset for $panel $prot" >> ${logfile}
-        echo >> ${logfile}
-    else
-        # preparing input files for GEMMA
-        echo >> ${logfile}
-        echo "PLINK: selecting the current SNP" >> ${logfile}
-        plink --bfile "$genofile" --extract "$totestIDs" --make-bed --out "$totestfile" --pheno <(awk '{print $1,$1, $3}' $phenofile) --allow-no-sex 2>&1 >>$logfile
-        echo >> ${logfile}
-        echo "PLINK: selecting the conditional SNP(s)" >> ${logfile}
-        plink --bfile "$genofile" --extract "$tocondIDs" --recode A --out "$tocondfile" 2>&1 >>$logfile
-        echo >> ${logfile}
-
-        if [[ -f "$tocondfile".raw ]];then # sometimes the "conditioning" variant is not in our dataset, in which case the *.raw file doesn't exist
-            tail -n +2 "$tocondfile".raw | cut -d ' ' -f 7- |awk '{print(1, $0)}' > "$covarfile"
-
-            # calling GEMMA
-            echo "GEMMA:" >> ${logfile}
-            "$GEMMA" -bfile "$totestfile" -n 1 -notsnp  -maf 0  -miss 1  -km 1 -k "$RELMAT" -lmm 4 -c "$covarfile" -o "$outfile" 2>&1 >>$logfile
-        else
-            echo "No variants of condition study present in our dataset for $panel $prot" >> ${logfile}
-            echo >> ${logfile}
-        fi
-    fi
+xitstatus=$(grep xited asc*.o )
+xited=$(grep xited asc*.o | wc -l)
+if [ $xited -gt 0 ]
+then
+    echo "Some association jobs have failed:"
+    echo $xitstatus
+    exit
 fi
+rm asc*[eo]
 
-echo "=============================================================================" >> ${logfile}
+echo "Concatenating..."
 
+head -n1 $(ls output/*.assoc.txt | head -n1) > $cohort.$phenotype.assoc.txt
+for i in {1..22}
+do
+    for j in `ls output/*chr${i}_*.assoc.txt`
+    do
+	tail -n+2 $j
+    done | sort -k3,3n
+done >> $cohort.$phenotype.assoc.txt
+
+
+echo "Building graphs.."
+
+bgzip $cohort.$phenotype.assoc.txt
+$tabix -s 1 -b 3 -e 3 -S 1 $cohort.$phenotype.assoc.txt.gz
+gsub 10g -I -q yesterday ./man_qq_annotate --chr-col chr --pos-col ps --auto-label --pval-col p_score --title "${cohort}-$phenotype" --sig-thresh 1e-08 --sig-thresh-line 1e-08 $cohort.$phenotype.assoc.txt.gz $cohort.$phenotype.assoc
+
+maf=0.05
+zcat $cohort.$phenotype.assoc.txt.gz | awk '$7>'$maf  | bgzip > $cohort.$phenotype.maf$maf.assoc.txt.gz
+$tabix -s 1 -b 3 -e 3 -S 1 $cohort.$phenotype.maf$maf.assoc.txt.gz
+gsub 10g -I -q yesterday ./man_qq_annotate --chr-col chr --pos-col ps --auto-label --pval-col p_score --title "${cohort}-$phenotype-MAF$maf" --sig-thresh 5e-08 --sig-thresh-line 5e-08 $cohort.$phenotype.maf$maf.assoc.txt.gz $cohort.$phenotype.maf$maf.assoc
+
+maf=0.01
+zcat $cohort.$phenotype.assoc.txt.gz | awk '$7>'$maf  | bgzip > $cohort.$phenotype.maf$maf.assoc.txt.gz
+$tabix -s 1 -b 3 -e 3 -S 1 $cohort.$phenotype.maf$maf.assoc.txt.gz
+gsub 10g -I -q yesterday ./man_qq_annotate --chr-col chr --pos-col ps --auto-label --pval-col p_score --title "${cohort}-$phenotype-MAF$maf" --sig-thresh 5e-08 --sig-thresh-line 5e-08 $cohort.$phenotype.maf$maf.assoc.txt.gz $cohort.$phenotype.maf$maf.assoc
+
+
+cd ..
+
+echo "Finished"
