@@ -38,7 +38,7 @@ if [[ $# -eq 0 ]];then
 fi
 
 # m/a results
-ma_results="/storage/hmgu/projects/helic/OLINK/meta_analysis"
+ma_results=" "
 
 logfile="cojo-slct.log"
 
