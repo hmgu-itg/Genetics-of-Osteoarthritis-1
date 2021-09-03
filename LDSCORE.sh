@@ -6,19 +6,24 @@
 #https://github.com/bulik/ldsc/wiki/FAQ
 
 #Path to software
-/nfs/team144/software/ldsc/
+ldsc_soft=$1
 
 wget https://data.broadinstitute.org/alkesgroup/LDSCORE/w_hm3.snplist.bz2
 bunzip2 w_hm3.snplist.bz2
 
 #Prepare the files
-zcat HD_hip.allchr.snptest.results.withkey.passedSNPQC_overallMAF.HWE.INFO.tables.allchr_headers |  awk 'OFS="\t"{print $2,$3,$4,$5,$6,$10,$14,$15,$16,$19}' >  forldsc_UKBB_HD_hip.txt
-PATH=/nfs/team144/software/anaconda/bin:$PATH
-/nfs/team144/software/ldsc/munge_sumstats.py --sumstats forldsc_UKBB_HD_hip.txt --out UKBB_HD_hip.ldsc --merge-alleles w_hm3.snplist
+input_file=$2
+zcat $input_file |  awk 'OFS="\t"{print $2,$3,$4,$5,$6,$10,$14,$15,$16,$19}' >  forldsc_AllOA.txt
+#Repeat for all phenos
+
+#Path to anacoda
+anacoda=$3
+PATH=$anacoda:$PATH
+$ldsc_soft/munge_sumstats.py --sumstats forldsc_AllOA.txt --out AllOA.ldsc --merge-alleles w_hm3.snplist
+#Repeat for all phenos
 
 #Running the analyses
-
 wget https://data.broadinstitute.org/alkesgroup/LDSCORE/eur_w_ld_chr.tar.bz2
 tar -jxvf eur_w_ld_chr.tar.bz2
-
-/nfs/team144/software/ldsc/ldsc.py --rg DDH.ldsc.sumstats.gz,UKBB_HD_hip.ldsc.sumstats.gz --ref-ld-chr eur_w_ld_chr/ --w-ld-chr eur_w_ld_chr/ --out DDH-UKBB-HD-hip_correlation
+$ldsc_soft/ldsc.py --rg AllOA.sumstats.gz,SpineOA.ldsc.sumstats.gz --ref-ld-chr eur_w_ld_chr/ --w-ld-chr eur_w_ld_chr/ --out AllOA-SpineOA_correlation
+#Repeat for all pairs of OA phenos
