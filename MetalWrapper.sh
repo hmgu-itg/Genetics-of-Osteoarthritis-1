@@ -27,7 +27,7 @@
 #########################################################
 ### GO consortium
 ### By Cindy G. Boer Erasmus MC
-### c.boer@erasmusmc.nl / cb39@sanger.ac.uk
+### c.boer@erasmusmc.nl
 ### Version 1.0
 ### Last-updated: 26/7/2018 
 ##########################################
@@ -84,10 +84,12 @@ ANALYZE HETEROGENEITY
 QUIT" >> $1.meta.METAL.par
 
 ###########################################
-### Make Metal .CMD 
+### Make Metal .CMD
+#Path to metal files
+metal_files=$4
 touch $1.meta.METAL.cmd
 echo -e "#!/usr/local/bin/bash
-/nfs/team144/it3/Software_farm3/generic-metal/metal $3$1.meta.METAL.par > $1.meta.METAL.log" > $1.meta.METAL.cmd
+$metal_files/metal $3$1.meta.METAL.par > $1.meta.METAL.log" > $1.meta.METAL.cmd
 
 chmod +x $1.meta.METAL.cmd
 chmod +x $1.meta.METAL.par
@@ -95,8 +97,7 @@ chmod +x $1.meta.METAL.par
 ###########################################
 ### Run METAL
 
-#bsub -G t144_oagwas_meta -J METAL.$1 -o $1.METAL.LOG -e $1.METAL.ERR -R "select[mem>3000] rusage[mem=3000]" -M3000 < $1.meta.METAL.cmd
-~ag15/local_programs/gsub 19G -R"span[hosts=1]" -q yesterday -G t144_oagwas_meta  -o $1.METAL.o  -e $1.METAL.e $3$1.meta.METAL.cmd
+./gsub 19G -R"span[hosts=1]" -q yesterday -G t144_oagwas_meta  -o $1.METAL.o  -e $1.METAL.e $3$1.meta.METAL.cmd
 
 ###########################################
 exit
