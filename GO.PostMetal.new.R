@@ -5,7 +5,7 @@
 #########################################################
 ### GO consortium
 ### By Cindy G. Boer Erasmus MC
-### c.boer@erasmusmc.nl / cb39@sanger.ac.uk
+### c.boer@erasmusmc.nl
 ### Version 2.1
 ### Last-updated: 06/02/2019
 #########################################################
@@ -90,7 +90,7 @@ chr <- function(x){
 # Reading Input files:
 print((paste0("Starting Post-MetalQC, Reading:",input.file)))
 df      <- fread(input.file, header = TRUE, data.table = TRUE, stringsAsFactors = FALSE)
-x       <- fread("zcat /lustre/scratch115/projects/t144_oagwas_meta/GO.MetaQC.package/Step_02_EASYQC/Mapping_File_CPTID_SNP_AF_HRCr1.1_GRCH37.nochrX.txt.gz",
+x       <- fread("zcat Mapping_File_CPTID_SNP_AF_HRCr1.1_GRCH37.nochrX.txt.gz",
                header = TRUE, data.table = TRUE, stringsAsFactors = TRUE)
 
 # Adding rsID's to Meta-analysis file:
