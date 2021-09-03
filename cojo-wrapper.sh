@@ -10,7 +10,7 @@ function usage {
 }
 
 ## default
-ct=0.9
+ct=0.99
 
 OPTIND=1
 while getopts "f:o:i:c:" optname; do
@@ -30,10 +30,7 @@ if [[ $# -eq 0 ]];then
 fi
 
 # required fields in the input table (tab separated)
-# variant/protein association ID: panel_prot_chr_pos; chr and pos correspond to the variant being tested
-#
-# chr, pos, a1, a2, freq1, beta, SE, p, N: fields correspond to either the variant being tested, 
-# or to conditioning variants, they have the same meaning as fields in a cojo file
+# chr, pos, a1, a2, freq1, beta, SE, p, N 
 
 out=${out/%/}
 
