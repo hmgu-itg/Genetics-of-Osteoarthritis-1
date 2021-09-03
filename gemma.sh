@@ -1,13 +1,13 @@
 #!/usr/bin/bash
-  
+
+# pheno
 panel=$1
 
 # protein
-
 prot=$2
 
 # chromosome 
-     
+ 
 chr=$3
 
 # position of the SNP 
